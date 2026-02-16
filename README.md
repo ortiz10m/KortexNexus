@@ -18,7 +18,7 @@ Kortex Nexus es una interfaz de terminal (TUI) diseñada para **equipos de bajos
 
 ## 📦 Instalación
 ```bash
-git clone [https://github.com/TU_USUARIO/KortexNexus.git](https://github.com/TU_USUARIO/KortexNexus.git)
+git clone https://github.com/ortiz10m/KortexNexus.git
 cd KortexNexus
 python3 -m venv venv
 source venv/bin/activate
