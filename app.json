@@ -1,0 +1,5 @@
+[
+    {"nombre": "Google", "url": "https://google.com", "color": "#4285F4"},
+    {"nombre": "YouTube", "url": "https://youtube.com", "color": "#FF0000"},
+    {"nombre": "WhatsApp", "url": "https://web.whatsapp.com", "color": "#25D366"}
+]
