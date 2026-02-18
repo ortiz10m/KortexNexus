@@ -1,75 +1,63 @@
-import subprocess
-import psutil
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Static, Input, Log, DataTable
-from textual.containers import Container
-from textual.reactive import reactive
-
-class MonitorSistema(Static):
-    """Monitor de CPU/RAM en tiempo real"""
-    texto_info = reactive("Iniciando sensores...")
-
-    def on_mount(self) -> None:
-        self.set_interval(1.0, self.update_stats)
-
-    def update_stats(self) -> None:
-        cpu = psutil.cpu_percent()
-        ram = psutil.virtual_memory().percent
-        
-        # Alertas de color si la RAM o CPU sufren
-        color_ram = "red" if ram > 90 else "magenta"
-        color_cpu = "red" if cpu > 90 else "cyan"
-        
-        self.texto_info = f"[bold {color_cpu}]CPU: {cpu}%[/]  |  [bold {color_ram}]RAM: {ram}%[/]"
-
-    def render(self) -> str:
-        return self.texto_info
+from textual.containers import Container, Vertical
+from textual.widgets import Header, Footer, Input, DataTable, Static, Log
+import subprocess
+import threading
+import cerebro  # <--- AQUÍ IMPORTAMOS TU NUEVO MÓDULO
 
 class KortexNexus(App):
-    """
-    KORTEX NEXUS v1.5 - Stable Edition
-    Sistema de Búsqueda y Reproducción Optimizado (1.8GB RAM)
-    """
-
     CSS = """
-    Screen { align: center middle; background: #000; }
-    
-    #caja_principal {
-        width: 95%; height: 95%;
-        border: heavy #00ff00; background: #111; padding: 1;
+    Screen {
+        background: #0d1117;
+        color: #00ff00;
     }
-
-    .titulo { text-align: center; text-style: bold; color: #00ff00; margin-bottom: 1; }
-    MonitorSistema { text-align: center; border: solid #333; background: #222; margin-bottom: 1; }
-    Input { dock: top; margin: 0 0 1 0; border: solid #00ff00; background: #000; color: #0f0; }
-    
-    DataTable { 
-        height: 1fr; 
-        border: solid cyan; 
-        background: #000; 
-        color: white; 
+    Header {
+        background: #161b22;
+        color: #00ff00;
+        dock: top;
     }
-    
-    Log { height: 6; border: solid yellow; background: black; color: white; dock: bottom; }
+    Input {
+        dock: top;
+        margin: 1;
+        border: solid #00ff00;
+        background: #0d1117;
+        color: white;
+    }
+    DataTable {
+        height: 1fr;
+        border: solid #30363d;
+    }
+    Log {
+        height: 1fr;
+        border: solid #30363d;
+        background: #0d1117;
+        color: #c9d1d9;
+    }
     """
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
-        with Container(id="caja_principal"):
-            yield Static("👁️ KORTEX NEXUS [SISTEMA ESTABLE]", classes="titulo")
-            yield MonitorSistema()
-            yield Input(placeholder="Escribe el nombre del video y dale ENTER...")
-            yield DataTable(cursor_type="row")
-            yield Log(id="log_sistema")
+        yield Input(placeholder="Escribe '/ai pregunta' o busca música...")
+        yield Vertical(
+            DataTable(),
+            Log()
+        )
         yield Footer()
 
     def on_mount(self) -> None:
-        """Configuramos las columnas de la tabla al iniciar."""
         table = self.query_one(DataTable)
-        table.add_columns("ID", "DURACIÓN", "TÍTULO")
+        table.add_columns("ID", "Duración", "Título")
+        table.cursor_type = "row"
+        self.title = "KORTEX NEXUS v2.0 (AI POWERED)"
+
+    def reproducir_audio(self, url):
+        """Función que corre en segundo plano para no congelar la app"""
+        try:
+            subprocess.run(["mpv", "--no-video", url])
+        except Exception as e:
+            pass # Si falla, falla en silencio
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
-        """Procesa lo que escribe el usuario."""
         comando = event.value.strip()
         log = self.query_one(Log)
         input_box = self.query_one(Input)
@@ -78,74 +66,83 @@ class KortexNexus(App):
         if not comando: return
         input_box.value = ""
 
-        # --- COMANDOS DE SISTEMA ---
+        # --- COMANDO DE SALIDA ---
         if comando == "salir":
             self.exit()
             return
-        
+
+        # --- COMANDO DE PARADA (Música) ---
         elif comando == "stop":
-            log.write_line("🛑 Deteniendo reproducción...")
+            log.write_line("🛑 Deteniendo música...")
             subprocess.run(["pkill", "mpv"])
             return
 
-        # --- AUTO-SEARCH (Búsqueda Automática) ---
-        log.write_line(f"🔍 Buscando: '{comando}'...")
+        # --- MODO INTELIGENCIA ARTIFICIAL (/ai) ---
+        # Ejemplo: /ai que es linux
+        elif comando.startswith("/ai "):
+            pregunta = comando[4:] # Quitamos el "/ai "
+            
+            log.write_line(f"🧠 Kortex pensando: '{pregunta}'...")
+            
+            # Llamamos a tu archivo cerebro.py
+            respuesta = cerebro.preguntar_a_gemini(pregunta)
+            
+            log.write_line("\n🤖 RESPUESTA:")
+            log.write_line(respuesta)
+            log.write_line("-" * 50)
+            return
+
+        # --- MODO BÚSQUEDA (Por defecto: YouTube) ---
+        log.write_line(f"🔍 Buscando en YouTube: '{comando}'...")
         table.clear()
 
-        try:
-            # Usamos yt-dlp para obtener datos sin descargar (super rápido)
-            resultado = subprocess.check_output(
-                [
-                    "yt-dlp", 
-                    f"ytsearch5:{comando}", 
-                    "--print", "%(id)s|%(duration_string)s|%(title)s",
-                    "--flat-playlist"
-                ],
-                text=True
-            )
-            
-            # Llenamos la tabla con los resultados
-            for linea in resultado.strip().split("\n"):
-                if "|" in linea:
-                    vid_id, duracion, titulo = linea.split("|", 2)
-                    table.add_row(vid_id, duracion, titulo)
-            
-            log.write_line("✅ Resultados listos. Selecciona con ENTER.")
-            table.focus()
+        def buscar_segundo_plano():
+            try:
+                # Usamos yt-dlp para buscar rápido sin descargar
+                resultado = subprocess.check_output(
+                    [
+                        "yt-dlp", 
+                        f"ytsearch5:{comando}", 
+                        "--print", "%(id)s|%(duration_string)s|%(title)s",
+                        "--flat-playlist"
+                    ],
+                    text=True
+                )
+                
+                # Actualizamos la tabla en el hilo principal
+                def actualizar_tabla():
+                    for linea in resultado.strip().split("\n"):
+                        if "|" in linea:
+                            parts = linea.split("|")
+                            if len(parts) >= 3:
+                                vid_id = parts[0]
+                                duracion = parts[1]
+                                titulo = parts[2]
+                                table.add_row(vid_id, duracion, titulo)
+                    log.write_line("✅ Resultados listos.")
+                    table.focus()
+                
+                self.call_from_thread(actualizar_tabla)
 
-        except Exception as e:
-            log.write_line(f"❌ Error buscando: {e}")
+            except Exception as e:
+                self.call_from_thread(log.write_line, f"❌ Error: {e}")
+
+        # Lanzamos la búsqueda en un hilo aparte para que no se trabe
+        threading.Thread(target=buscar_segundo_plano).start()
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected) -> None:
-        """Reproduce el video seleccionado de forma segura."""
         log = self.query_one(Log)
+        row = event.data_table.get_row_at(event.cursor_row)
+        vid_id = row[0]
+        titulo = row[2]
         
-        # Obtenemos los datos de la fila seleccionada
-        fila = self.query_one(DataTable).get_row(event.row_key)
-        video_id = fila[0]
-        titulo = fila[2]
-
-        log.write_line(f"🚀 Lanzando: {titulo}")
-
-        try:
-            # AQUÍ ESTÁ EL FIX ANTI-CRASH
-            # stdin=subprocess.DEVNULL: Evita que MPV robe el teclado
-            # start_new_session=True: Lo separa del proceso principal
-            subprocess.Popen(
-                [
-                    "mpv", 
-                    f"https://www.youtube.com/watch?v={video_id}", 
-                    "--ytdl-format=bestvideo[height<=480]+bestaudio/best[height<=480]", 
-                    "--fs", 
-                    "--force-window=immediate"
-                ], 
-                stdin=subprocess.DEVNULL, 
-                stdout=subprocess.DEVNULL, 
-                stderr=subprocess.DEVNULL,
-                start_new_session=True 
-            )
-        except Exception as e:
-            log.write_line(f"❌ Error al reproducir: {e}")
+        url = f"https://www.youtube.com/watch?v={vid_id}"
+        log.write_line(f"🎵 Reproduciendo: {titulo}")
+        
+        # Lanzar MPV en un hilo separado
+        hilo_audio = threading.Thread(target=self.reproducir_audio, args=(url,))
+        hilo_audio.daemon = True
+        hilo_audio.start()
 
 if __name__ == "__main__":
     app = KortexNexus()
