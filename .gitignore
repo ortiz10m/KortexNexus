@@ -1,4 +1,6 @@
-venv/
 __pycache__/
-*.log
+*.mp3
 .env
+venv/
+app.json
+*.log
