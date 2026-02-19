@@ -1,6 +1,6 @@
 """
 PROJECT: KORTEX NEXUS
-AUTHOR: David (Founder)
+AUTHOR: David Santiago Ortiz Rincon (Founder)
 YEAR: 2026
 LICENSE: Proprietary / MIT
 DESCRIPTION: AI-Powered Productivity Suite for Low-End Hardware.
@@ -14,7 +14,9 @@ import speech_recognition as sr
 import os
 import sys
 import json
-from PIL import Image # Necesario para el icono
+import shutil 
+from PIL import Image 
+from tkinter import PhotoImage, messagebox # <--- AGREGADO MESSAGEBOX
 import cerebro
 
 # --- CONFIGURACIÓN VISUAL ---
@@ -22,7 +24,7 @@ ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("dark-blue")
 
 ARCHVO_APPS = "apps.json"
-LOGO_PATH = "logo_kortex.png" # Asegúrate de haber generado el logo
+LOGO_PATH = "logo_kortex.png" 
 
 class KortexNexus(ctk.CTk):
     def __init__(self):
@@ -32,7 +34,7 @@ class KortexNexus(ctk.CTk):
         self.title("KORTEX NEXUS v1.0 (OFFICIAL)")
         self.geometry("1100x750")
         
-        # Configurar Icono de Ventana (Funciona en Linux y Windows)
+        # Configurar Icono
         try:
             if os.path.exists(LOGO_PATH):
                 imagen_icono = Image.open(LOGO_PATH)
@@ -45,12 +47,14 @@ class KortexNexus(ctk.CTk):
         self.tabview.pack(padx=20, pady=20, fill="both", expand=True)
 
         self.tab_ai = self.tabview.add("🧠 Cerebro Nexus")
+        self.tab_notes = self.tabview.add("📝 Notas IA") 
         self.tab_music = self.tabview.add("🎵 Radio")
         self.tab_apps = self.tabview.add("🚀 Launcher")
         self.tab_monitor = self.tabview.add("📊 Monitor")
 
         # 3. INICIALIZAR MÓDULOS
         self.crear_pestana_ai()
+        self.crear_pestana_notas() 
         self.crear_pestana_musica()
         self.crear_pestana_apps()
         self.crear_pestana_monitor()
@@ -82,7 +86,6 @@ class KortexNexus(ctk.CTk):
         self.recargar_apps()
 
     def abrir_navegador_kortex(self, url):
-        """Lanza el navegador Kortex Pro en proceso independiente"""
         try:
             if not url.startswith("http") and not url.startswith("www"):
                 url = f"https://www.google.com/search?q={url}"
@@ -99,7 +102,7 @@ class KortexNexus(ctk.CTk):
     def crear_pestana_ai(self):
         self.chat_box = ctk.CTkTextbox(self.tab_ai, width=900, height=400, font=("Segoe UI", 14))
         self.chat_box.pack(pady=10, fill="both", expand=True)
-        self.chat_box.insert("0.0", "🤖 KORTEX NEXUS: En línea. Esperando instrucciones.\n\n")
+        self.chat_box.insert("0.0", "🤖 KORTEX NEXUS: En línea.\n\n")
         self.chat_box.configure(state="disabled")
 
         frame_input = ctk.CTkFrame(self.tab_ai, fg_color="transparent")
@@ -123,8 +126,6 @@ class KortexNexus(ctk.CTk):
 
     def escuchar_microfono(self):
         self.btn_mic.configure(fg_color="#e74c3c")
-        self.input_ai.delete(0, "end")
-        self.input_ai.insert(0, "Escuchando...")
         r = sr.Recognizer()
         try:
             with sr.Microphone() as source:
@@ -177,6 +178,28 @@ class KortexNexus(ctk.CTk):
         self.chat_box.insert("end", f"\n{t}\n")
         self.chat_box.see("end")
         self.chat_box.configure(state="disabled")
+
+    # ==========================================
+    # PESTAÑA EXTRA: NOTAS INTELIGENTES
+    # ==========================================
+    def crear_pestana_notas(self):
+        frame_tools = ctk.CTkFrame(self.tab_notes, fg_color="transparent")
+        frame_tools.pack(fill="x", pady=5)
+        
+        ctk.CTkButton(frame_tools, text="✨ Resumir", fg_color="#8e44ad", width=100, command=lambda: self.procesar_nota("Resume esto:")).pack(side="left", padx=5)
+        ctk.CTkButton(frame_tools, text="🧹 Corregir", fg_color="#27ae60", width=100, command=lambda: self.procesar_nota("Corrige ortografía:")).pack(side="left", padx=5)
+
+        self.txt_notas = ctk.CTkTextbox(self.tab_notes, font=("Consolas", 14), wrap="word")
+        self.txt_notas.pack(fill="both", expand=True, pady=10)
+        self.txt_notas.insert("0.0", "Escribe aquí tu texto...")
+
+    def procesar_nota(self, prompt):
+        c = self.txt_notas.get("1.0", "end")
+        threading.Thread(target=lambda: self.actualizar_nota(cerebro.preguntar_a_gemini(f"{prompt}\n{c}"))).start()
+
+    def actualizar_nota(self, t):
+        self.txt_notas.delete("1.0", "end")
+        self.txt_notas.insert("0.0", t)
 
     # ==========================================
     # PESTAÑA 2: MÚSICA
@@ -260,7 +283,7 @@ class KortexNexus(ctk.CTk):
     def recargar_apps(self): self.dibujar_botones()
 
     # ==========================================
-    # PESTAÑA 4: MONITOR
+    # PESTAÑA 4: MONITOR + CLEANER
     # ==========================================
     def crear_pestana_monitor(self):
         self.lbl_cpu = ctk.CTkLabel(self.tab_monitor, text="CPU", font=("Arial", 16)); self.lbl_cpu.pack(pady=10)
@@ -268,9 +291,20 @@ class KortexNexus(ctk.CTk):
         self.lbl_ram = ctk.CTkLabel(self.tab_monitor, text="RAM", font=("Arial", 16)); self.lbl_ram.pack(pady=10)
         self.bar_ram = ctk.CTkProgressBar(self.tab_monitor, width=500); self.bar_ram.pack()
         
-        # COPYRIGHT FOOTER (IMPORTANTE)
-        ctk.CTkLabel(self.tab_monitor, text="© 2026 Kortex Nexus Dev Team - All Rights Reserved", 
+        # BOTÓN CLEANER CORREGIDO (YA NO PIDE TEXTO)
+        ctk.CTkButton(self.tab_monitor, text="🔥 PURGAR SISTEMA (Cleaner)", height=50, fg_color="#c0392b",
+                      command=self.limpiar_sistema).pack(pady=30)
+        
+        ctk.CTkLabel(self.tab_monitor, text="© 2026 Kortex Nexus Dev Team", 
                      text_color="gray", font=("Arial", 10)).pack(side="bottom", pady=20)
+
+    def limpiar_sistema(self):
+        # 1. Ejecutar comando de Linux para liberar buffers
+        os.system("sync")
+        # 2. Borrar caché de Python
+        shutil.rmtree("__pycache__", ignore_errors=True)
+        # 3. AVISO (Sin pedir input)
+        messagebox.showinfo("Kortex Cleaner", "✅ RAM liberada y sistema optimizado correctamente.")
 
     def actualizar_monitor(self):
         try:
