@@ -16,15 +16,45 @@ import sys
 import json
 import shutil 
 from PIL import Image 
-from tkinter import PhotoImage, messagebox # <--- AGREGADO MESSAGEBOX
+from tkinter import PhotoImage, messagebox
 import cerebro
+
+# --- RUTAS ABSOLUTAS (BLINDADAS) ---
+RUTA_CARPETA = os.path.dirname(os.path.abspath(__file__))
+ARCHVO_APPS = os.path.join(RUTA_CARPETA, "apps.json")
+LOGO_PATH = os.path.join(RUTA_CARPETA, "logo_kortex.png")
+SCRIPT_NAV = os.path.join(RUTA_CARPETA, "navegador.py")
+ENV_FILE = os.path.join(RUTA_CARPETA, ".env")
 
 # --- CONFIGURACIÓN VISUAL ---
 ctk.set_appearance_mode("Dark") 
 ctk.set_default_color_theme("dark-blue")
 
-ARCHVO_APPS = "apps.json"
-LOGO_PATH = "logo_kortex.png" 
+# --- SISTEMA DE ACTIVACIÓN IA ---
+def verificar_activacion():
+    from dotenv import load_dotenv
+    load_dotenv(ENV_FILE)
+    if not os.getenv("GEMINI_API_KEY"):
+        setup = ctk.CTk()
+        setup.title("Activación Kortex Nexus")
+        setup.geometry("450x300")
+        
+        ctk.CTkLabel(setup, text="🔑 ACTIVACIÓN REQUERIDA", font=("Arial", 18, "bold")).pack(pady=20)
+        ctk.CTkLabel(setup, text="Para usar el Cerebro Nexus, ingresa tu API Key.", font=("Arial", 12)).pack()
+        
+        entry_key = ctk.CTkEntry(setup, placeholder_text="Pega tu clave aquí...", width=350)
+        entry_key.pack(pady=20)
+
+        def guardar():
+            clave = entry_key.get().strip()
+            if len(clave) > 10:
+                with open(ENV_FILE, "w") as f:
+                    f.write(f"GEMINI_API_KEY={clave}")
+                setup.destroy()
+        
+        ctk.CTkButton(setup, text="ACTIVAR Y ARRANCAR", command=guardar, fg_color="#27ae60").pack(pady=10)
+        setup.mainloop()
+        load_dotenv(ENV_FILE)
 
 class KortexNexus(ctk.CTk):
     def __init__(self):
@@ -34,11 +64,15 @@ class KortexNexus(ctk.CTk):
         self.title("KORTEX NEXUS v1.0 (OFFICIAL)")
         self.geometry("1100x750")
         
-        # Configurar Icono
+        # Configurar Icono con Ruta Absoluta
         try:
             if os.path.exists(LOGO_PATH):
-                imagen_icono = Image.open(LOGO_PATH)
-                self.iconphoto(False, ctk.CTkImage(imagen_icono))
+                img_pil = Image.open(LOGO_PATH)
+                # Icono para la ventana
+                self.icon_img = ctk.CTkImage(light_image=img_pil, dark_image=img_pil, size=(32, 32))
+                # Icono para la barra de tareas (Linux)
+                self.img_tk = PhotoImage(file=LOGO_PATH)
+                self.wm_iconphoto(True, self.img_tk)
         except Exception as e:
             print(f"Nota: No se pudo cargar icono ({e})")
 
@@ -92,13 +126,14 @@ class KortexNexus(ctk.CTk):
             elif not url.startswith("http"):
                 url = "https://" + url
                 
-            subprocess.Popen([sys.executable, "navegador.py", url])
+            # Lanza el navegador usando la ruta absoluta definida
+            subprocess.Popen([sys.executable, SCRIPT_NAV, url])
         except Exception as e:
             print(f"Error lanzando browser: {e}")
 
-    # ==========================================
-    # PESTAÑA 1: CEREBRO NEXUS
-    # ==========================================
+    # (Mantenemos tus funciones crear_pestana_ai, crear_pestana_musica, crear_pestana_apps iguales)
+    #
+
     def crear_pestana_ai(self):
         self.chat_box = ctk.CTkTextbox(self.tab_ai, width=900, height=400, font=("Segoe UI", 14))
         self.chat_box.pack(pady=10, fill="both", expand=True)
@@ -119,8 +154,7 @@ class KortexNexus(ctk.CTk):
         self.btn_send_ai.pack(side="left", padx=5)
         
         self.voz_activa = ctk.BooleanVar(value=True)
-        self.chk_voz = ctk.CTkCheckBox(frame_input, text="Voz", variable=self.voz_activa)
-        self.chk_voz.pack(side="left", padx=5)
+        ctk.CTkCheckBox(frame_input, text="Voz", variable=self.voz_activa).pack(side="left", padx=5)
 
     def hilo_escuchar(self): threading.Thread(target=self.escuchar_microfono).start()
 
@@ -207,16 +241,12 @@ class KortexNexus(ctk.CTk):
     def crear_pestana_musica(self):
         self.lbl_music = ctk.CTkLabel(self.tab_music, text="Radio Nexus", font=("Arial", 20, "bold"))
         self.lbl_music.pack(pady=20)
-        
         self.input_music = ctk.CTkEntry(self.tab_music, placeholder_text="Buscar frecuencia...", width=400, height=40, corner_radius=20)
         self.input_music.pack(pady=10)
-        
         frame_ctl = ctk.CTkFrame(self.tab_music, fg_color="transparent")
         frame_ctl.pack(pady=10)
-        
         ctk.CTkButton(frame_ctl, text="▶ Play", width=100, command=self.hilo_buscar_musica).pack(side="left", padx=10)
         ctk.CTkButton(frame_ctl, text="⏹ Stop", width=100, fg_color="#e74c3c", command=lambda: subprocess.run(["pkill","mpv"])).pack(side="left", padx=10)
-        
         self.status_music = ctk.CTkLabel(self.tab_music, text="En espera...", text_color="gray")
         self.status_music.pack(pady=20)
 
@@ -232,27 +262,18 @@ class KortexNexus(ctk.CTk):
         subprocess.Popen(cmd, shell=True)
 
     # ==========================================
-    # PESTAÑA 3: LAUNCHER (NAVEGACIÓN LIBRE)
+    # PESTAÑA 3: LAUNCHER
     # ==========================================
     def crear_pestana_apps(self):
         frame_nav = ctk.CTkFrame(self.tab_apps, fg_color="transparent")
         frame_nav.pack(fill="x", padx=10, pady=20)
-
         self.entry_nav_libre = ctk.CTkEntry(frame_nav, placeholder_text="🌐 Navegar en la Red Nexus...", height=50, font=("Arial", 16), corner_radius=25)
         self.entry_nav_libre.pack(side="left", fill="x", expand=True, padx=(10, 10))
         self.entry_nav_libre.bind("<Return>", lambda event: self.navegar_libre())
-
-        btn_ir = ctk.CTkButton(frame_nav, text="IR 🚀", width=80, height=50, corner_radius=25, command=self.navegar_libre)
-        btn_ir.pack(side="left", padx=10)
-
-        ctk.CTkLabel(self.tab_apps, text="ACCESOS DIRECTOS", font=("Arial", 12, "bold"), text_color="gray").pack(pady=10)
-
+        ctk.CTkButton(frame_nav, text="IR 🚀", width=80, height=50, corner_radius=25, command=self.navegar_libre).pack(side="left", padx=10)
         self.frame_apps_container = ctk.CTkScrollableFrame(self.tab_apps, fg_color="transparent")
         self.frame_apps_container.pack(fill="both", expand=True, padx=10, pady=5)
-        
-        btn_add = ctk.CTkButton(self.tab_apps, text="➕ Agregar Atajo", fg_color="#333", command=self.pedir_datos_app)
-        btn_add.pack(pady=10)
-
+        ctk.CTkButton(self.tab_apps, text="➕ Agregar Atajo", fg_color="#333", command=self.pedir_datos_app).pack(pady=10)
         self.dibujar_botones()
 
     def navegar_libre(self):
@@ -273,11 +294,9 @@ class KortexNexus(ctk.CTk):
         for c in range(cols): self.frame_apps_container.grid_columnconfigure(c, weight=1)
 
     def pedir_datos_app(self):
-        dialog = ctk.CTkInputDialog(text="Nombre:", title="Nuevo Enlace")
-        nombre = dialog.get_input()
+        nombre = ctk.CTkInputDialog(text="Nombre:", title="Nuevo Enlace").get_input()
         if nombre:
-            dialog2 = ctk.CTkInputDialog(text="URL:", title="Destino")
-            url = dialog2.get_input()
+            url = ctk.CTkInputDialog(text="URL:", title="Destino").get_input()
             if url: self.guardar_nueva_app(nombre, url)
 
     def recargar_apps(self): self.dibujar_botones()
@@ -291,7 +310,7 @@ class KortexNexus(ctk.CTk):
         self.lbl_ram = ctk.CTkLabel(self.tab_monitor, text="RAM", font=("Arial", 16)); self.lbl_ram.pack(pady=10)
         self.bar_ram = ctk.CTkProgressBar(self.tab_monitor, width=500); self.bar_ram.pack()
         
-        # BOTÓN CLEANER CORREGIDO (YA NO PIDE TEXTO)
+        # BOTÓN CLEANER MEJORADO
         ctk.CTkButton(self.tab_monitor, text="🔥 PURGAR SISTEMA (Cleaner)", height=50, fg_color="#c0392b",
                       command=self.limpiar_sistema).pack(pady=30)
         
@@ -299,12 +318,9 @@ class KortexNexus(ctk.CTk):
                      text_color="gray", font=("Arial", 10)).pack(side="bottom", pady=20)
 
     def limpiar_sistema(self):
-        # 1. Ejecutar comando de Linux para liberar buffers
         os.system("sync")
-        # 2. Borrar caché de Python
         shutil.rmtree("__pycache__", ignore_errors=True)
-        # 3. AVISO (Sin pedir input)
-        messagebox.showinfo("Kortex Cleaner", "✅ RAM liberada y sistema optimizado correctamente.")
+        messagebox.showinfo("Kortex Cleaner", "✅ RAM liberada y sistema optimizado.")
 
     def actualizar_monitor(self):
         try:
@@ -313,10 +329,10 @@ class KortexNexus(ctk.CTk):
             self.bar_cpu.set(c/100)
             self.lbl_ram.configure(text=f"RAM: {r.percent}%")
             self.bar_ram.set(r.percent/100)
-            self.bar_ram.configure(progress_color="red" if r.percent > 85 else "#1f6aa5")
         except: pass
         self.after(1000, self.actualizar_monitor)
 
 if __name__ == "__main__":
+    verificar_activacion()
     app = KortexNexus()
     app.mainloop()
