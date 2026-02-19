@@ -1,49 +1,29 @@
-# 🧠 KORTEX NEXUS (v1.0 Gold)
+# 🚀 Kortex Nexus v1.0
+**Suite de Productividad de Alto Rendimiento impulsada por IA para Hardware de Bajos Recursos.**
 
-> **"Transforma cualquier PC antigua en una Estación de Trabajo con IA."**
+Kortex Nexus es una plataforma diseñada específicamente para revivir y potenciar equipos antiguos o con recursos limitados (<2GB RAM). A diferencia del software tradicional que asfixia tu memoria, Kortex utiliza una **arquitectura modular multiplataforma** que delega el trabajo pesado al sistema operativo, ofreciendo Inteligencia Artificial gratuita, automatización y navegación web sin colapsar tu PC.
 
-![Kortex Logo](logo_kortex.png)
+## 🔥 Características Principales
 
-**Kortex Nexus** es una Suite de Productividad diseñada específicamente para revivir equipos de bajos recursos (<2GB RAM). A diferencia de los navegadores modernos que consumen toda tu memoria, Kortex utiliza una arquitectura modular para ofrecer Inteligencia Artificial, Automatización y Navegación Web sin colapsar tu sistema.
+* **🧠 Cerebro Nexus (IA Modo Enjambre):** Asistente de Inteligencia Artificial integrado que responde, resume y corrige textos usando un enrutamiento dinámico (g4f) **100% gratis y sin necesidad de API Keys**.
+* **🗣️ Modo Jarvis (Voz y Oído):** Habla con tu PC y escucha las respuestas en tiempo real con integración nativa de STT (SpeechRecognition) y TTS (Google Text-to-Speech).
+* **🌐 Kortex Web Engine:** Puente de navegación inteligente. En Linux utiliza `Epiphany` (motor ultraligero de GNOME) en "Modo App", y en Windows utiliza tu navegador nativo. Cero consumo extra de RAM en la suite.
+* **🚀 Launcher Dinámico:** Panel de accesos directos personalizable. Tus web-apps favoritas a un clic, con protección anti-captchas (DuckDuckGo routing).
+* **🎵 Radio Nexus:** Reproductor de música en segundo plano basado en terminal (yt-dlp + MPV). Escucha YouTube sin cargar el video, ahorrando hasta un 80% de CPU.
+* **📊 Monitor & Cleaner:** Visualización en tiempo real de recursos y purga automática de caché del sistema operativo para evitar cuellos de botella.
 
-## 🚀 Características Principales
+## 🛠️ Stack Tecnológico
 
-- **🧠 Cerebro Nexus (Gemini 2.5):** Asistente de IA integrado que responde, programa y redacta por ti.
-- **🗣️ Modo Jarvis (Voz y Oído):** Habla con tu PC y escucha las respuestas en tiempo real (STT/TTS).
-- **🌐 Kortex Browser Pro:** Un navegador basado en Chromium puro (QtWebEngine), optimizado para cargar Canva, Q10 y YouTube sin rastreadores ni consumo excesivo de RAM.
-- **🚀 Launcher Dinámico:** Panel de accesos directos personalizable. Tus apps favoritas a un clic.
-- **📊 Monitor de Sistema:** Visualización en tiempo real de CPU y RAM para evitar cuellos de botella.
-- **🎵 Radio Nexus:** Reproductor de música (YouTube Audio) sin anuncios y en segundo plano.
+* **Core:** Python 3.x
+* **UI:** CustomTkinter (Modern Dark GUI)
+* **Motor de IA:** `g4f` (Red Neuronal Libre Autónoma)
+* **Audio & Voz:** `gTTS`, `SpeechRecognition`, `mpv`
+* **Motor Web:** `Epiphany-browser` (Linux) / `webbrowser` OS API (Windows)
 
-## 🛠️ Tecnologías
+## 📦 Instalación Rápida
 
-- **Core:** Python 3.x
-- **UI:** CustomTkinter (Modern GUI)
-- **Browser Engine:** PyQt6 WebEngine (Chromium)
-- **AI:** Google Gemini API
-- **Audio:** MPV + SpeechRecognition
-
-## 📦 Instalación
-
+### 1. Dependencias del Sistema (Para LocOS / Ubuntu / Debian)
+Abre tu terminal y asegúrate de tener los motores ligeros instalados:
 ```bash
-# 1. Clonar el repositorio
-git clone [https://github.com/ortiz10m/KortexNexus.git](https://github.com/ortiz10m/KortexNexus.git)
-cd KortexNexus
-
-# 2. Crear entorno virtual (Recomendado)
-python3 -m venv venv
-source venv/bin/activate
-
-# 3. Instalar dependencias
-pip install -r requirements.txt
-
-# 4. Configurar tu Llave de IA
-# Crea un archivo .env en la carpeta y pega tu API Key de Google Gemini:
-# GEMINI_API_KEY=tu_clave_aqui
-
-# 5. Ejecutar Kortex
-python3 main.py
-
-## 📄 Licencia
-Este proyecto está bajo la Licencia MIT.
-**Propiedad Intelectual de David (Founder) - 2026.**
+sudo apt update
+sudo apt install epiphany-browser mpv python3-venv -y
