@@ -24,6 +24,33 @@ Kortex Nexus es una plataforma diseñada específicamente para revivir y potenci
 
 ### 1. Dependencias del Sistema (Para LocOS / Ubuntu / Debian)
 Abre tu terminal y asegúrate de tener los motores ligeros instalados:
-```bash
-sudo apt update
-sudo apt install epiphany-browser mpv python3-venv -y
+
+    sudo apt update
+    sudo apt install epiphany-browser mpv python3-venv -y
+
+### 2. Clonar y Configurar
+
+    # Clonar el repositorio
+    git clone https://github.com/ortiz10m/KortexNexus.git
+    cd KortexNexus
+
+    # Crear entorno virtual (Recomendado)
+    python3 -m venv venv
+    source venv/bin/activate
+
+    # Instalar dependencias de Python
+    pip install -r requirements.txt
+
+### 3. Ejecutar Kortex
+¡Listo! No necesitas configurar ninguna API Key ni crear cuentas. Simplemente lanza el sistema:
+
+    python3 main.py
+
+*(O utiliza el script de arranque `./run.sh` si lo tienes configurado).*
+
+---
+
+## 📄 Licencia y Copyright
+**© 2026 David Santiago Ortiz Rincon (Founder). Todos los derechos reservados.**
+
+Este proyecto es de código cerrado y propiedad intelectual exclusiva de su autor. El código fuente publicado en este repositorio tiene fines puramente demostrativos (Portafolio). Queda estrictamente prohibida la copia, modificación, distribución o uso comercial de este software sin autorización expresa, previa y por escrito del autor.
