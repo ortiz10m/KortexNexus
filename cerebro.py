@@ -4,54 +4,55 @@ import os
 
 class CerebroKortex:
     def __init__(self):
-        # Modo Enjambre: sin proveedor fijo para evitar caídas
-        pass
+        # 🧠 EL HIPOCAMPO: Aquí guardamos la memoria de la conversación
+        # Le inyectamos un "System Prompt" para darle su personalidad Dark/Focus
+        self.historial = [
+            {"role": "system", "content": "Eres Kortex Nexus, una IA de alto rendimiento, minimalista, precisa y directa. Respondes de forma concisa y profesional."}
+        ]
 
-    def pensar(self, mensaje):
+    def pensar_en_vivo(self, mensaje):
         """
-        Envía el mensaje a la red neuronal buscando el primer servidor gratuito.
+        Envía el historial completo a la red neuronal para mantener el contexto (Memoria).
         """
+        # 1. Guardamos la nueva pregunta del usuario en la memoria
+        self.historial.append({"role": "user", "content": mensaje})
+
+        # 2. Control de RAM: Si la memoria crece mucho, borramos lo más viejo (sin borrar el System Prompt)
+        if len(self.historial) > 11:
+            self.historial.pop(1)
+
         try:
-            print("🧠 Kortex IA buscando nodos libres...")
+            print("🧠 Kortex IA conectando con historial en memoria...")
+            
+            # 3. Le enviamos TODA la lista de memoria, no solo el último mensaje
             respuesta = g4f.ChatCompletion.create(
                 model=g4f.models.gpt_4, 
-                messages=[{"role": "user", "content": mensaje}]
+                messages=self.historial,
+                stream=True 
             )
-            return respuesta
             
+            respuesta_completa = ""
+            for fragmento in respuesta:
+                if fragmento and isinstance(fragmento, str): 
+                    respuesta_completa += fragmento
+                    yield fragmento
+            
+            # 4. Guardamos la respuesta final de Kortex en la memoria para que recuerde lo que dijo
+            if respuesta_completa.strip():
+                self.historial.append({"role": "assistant", "content": respuesta_completa})
+                
         except Exception as e:
-            return f"❌ Error neuronal: Red saturada o sin conexión. ({e})"
+            # Si falla, sacamos la pregunta rota de la memoria para no corromper el historial
+            self.historial.pop()
+            yield f"❌ Error neuronal: Servidores saturados. ({e})"
 
 def generar_audio(texto):
-    """
-    Convierte la respuesta de la IA en un archivo de audio mp3.
-    """
     try:
         archivo = "kortex_voz.mp3"
-        
-        # Limpiamos emojis y asteriscos para que la voz suene natural y no lea los símbolos
         texto_limpio = texto.replace("🧠", "").replace("🤖", "").replace("🔥", "").replace("❌", "").replace("*", "")
-        
-        # Generamos la voz en español (acento neutro/españa)
         tts = gTTS(text=texto_limpio, lang='es', tld='com')
         tts.save(archivo)
-        
-        # Devolvemos el nombre del archivo para que main.py lo reproduzca con mpv
         return archivo
-        
     except Exception as e:
         print(f"⚠️ Advertencia TTS: No se pudo generar la voz ({e})")
         return None
-
-# --- ZONA DE PRUEBAS ---
-if __name__ == "__main__":
-    print("🔥 Iniciando Pruebas de Kortex AI Engine...")
-    ia = CerebroKortex()
-    res = ia.pensar("Dime hola.")
-    print(f"Respuesta: {res}")
-    
-    print("🔊 Generando prueba de audio...")
-    ruta_audio = generar_audio(res)
-    if ruta_audio:
-        print(f"Audio guardado en: {ruta_audio}. Reproduciendo...")
-        os.system(f"mpv --no-video {ruta_audio}")
