@@ -240,13 +240,13 @@ class TabMonitor(ctk.CTkFrame):
         card = componentes.Card(self)
         card.pack(fill="x", padx=tema.ESP_XXXL, pady=(0, tema.ESP_MD))
 
-        fila = ctk.CTkFrame(card, fg_color="transparent")
-        fila.pack(fill="x", padx=tema.ESP_LG, pady=tema.ESP_MD)
+        fila1 = ctk.CTkFrame(card, fg_color="transparent")
+        fila1.pack(fill="x", padx=tema.ESP_LG, pady=(tema.ESP_MD, tema.ESP_XS))
 
         self.var_auto_cryo = ctk.BooleanVar(value=bool(self.config.get("auto_cryo_activo", True)))
         ctk.CTkSwitch(
-            fila,
-            text="Auto-Cryo (congelar inactivas)",
+            fila1,
+            text="Auto-Cryo (suspender apps inactivas bajo presión)",
             variable=self.var_auto_cryo,
             font=(tema.FUENTE_CUERPO, tema.TAMANO_PEQUENO, "bold"),
             progress_color=tema.COLOR_PRIMARIO,
@@ -254,46 +254,48 @@ class TabMonitor(ctk.CTkFrame):
         ).pack(side="left")
 
         self.lbl_cryo_estado = ctk.CTkLabel(
-            fila,
+            fila1,
             text="0 proceso(s) suspendido(s)",
             font=(tema.FUENTE_MONO, tema.TAMANO_MICRO),
             text_color=tema.COLOR_TEXTO_SECUNDARIO,
         )
-        self.lbl_cryo_estado.pack(side="left", padx=tema.ESP_LG)
+        self.lbl_cryo_estado.pack(side="right")
+
+        fila2 = ctk.CTkFrame(card, fg_color="transparent")
+        fila2.pack(fill="x", padx=tema.ESP_LG, pady=(0, tema.ESP_MD))
+
+        self.entry_cryo = ctk.CTkEntry(
+            fila2,
+            placeholder_text="Nombre del proceso a suspender manualmente (ej: discord)",
+            height=32,
+            font=(tema.FUENTE_CUERPO, tema.TAMANO_MICRO),
+            fg_color=tema.COLOR_FONDO,
+            border_color=tema.COLOR_BORDE,
+        )
+        self.entry_cryo.pack(side="left", fill="x", expand=True, padx=(0, tema.ESP_SM))
 
         ctk.CTkButton(
-            fila,
+            fila2,
+            text="Suspender",
+            font=(tema.FUENTE_CUERPO, tema.TAMANO_MICRO, "bold"),
+            fg_color=tema.COLOR_INFO,
+            height=32,
+            width=105,
+            command=self._congelar_manual,
+        ).pack(side="left", padx=(0, tema.ESP_SM))
+
+        ctk.CTkButton(
+            fila2,
             text="Reanudar todo",
             font=(tema.FUENTE_CUERPO, tema.TAMANO_MICRO, "bold"),
             fg_color="transparent",
             border_width=1,
             border_color=tema.COLOR_BORDE_FUERTE,
             hover_color=tema.COLOR_ELEVADO_HOVER,
-            height=30,
+            height=32,
             width=125,
             command=self._descongelar_todo,
-        ).pack(side="right")
-
-        self.entry_cryo = ctk.CTkEntry(
-            fila,
-            placeholder_text="Proceso a suspender (ej: discord)",
-            width=190,
-            height=30,
-            font=(tema.FUENTE_CUERPO, tema.TAMANO_MICRO),
-            fg_color=tema.COLOR_FONDO,
-            border_color=tema.COLOR_BORDE,
-        )
-        self.entry_cryo.pack(side="right", padx=(0, tema.ESP_SM))
-
-        ctk.CTkButton(
-            fila,
-            text="Suspender",
-            font=(tema.FUENTE_CUERPO, tema.TAMANO_MICRO, "bold"),
-            fg_color=tema.COLOR_INFO,
-            height=30,
-            width=92,
-            command=self._congelar_manual,
-        ).pack(side="right", padx=(0, tema.ESP_XS))
+        ).pack(side="left")
 
     def _construir_consola(self):
         contenedor = ctk.CTkFrame(self, fg_color="transparent")
