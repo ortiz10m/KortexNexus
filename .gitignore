@@ -1,6 +1,42 @@
+# Python
 __pycache__/
-*.mp3
-.env
+*.py[cod]
+*.egg-info/
 venv/
+.venv/
+env/
+ENV/
+
+# Build artifacts
+build/
+dist/
+release/
+*.spec
+!packaging/kortex_windows.spec
+_internal/
+*.deb
+*.tar.gz
+*.zip
+
+# Binarios externos pesados (descargados aparte)
+modules/browser/windows_bin/
+modules/browser/linux_bin/
+modules/media/windows_bin/
+
+# Audios generados
+*.mp3
+
+# Configuracion local
+.env
 app.json
 *.log
+
+# Basura creada por accidente
+np
+pickle
+threading
+time
+
+# Sistema
+.DS_Store
+Thumbs.db

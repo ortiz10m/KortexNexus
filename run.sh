@@ -1,1 +1,2 @@
-python3 main.py
+#!/usr/bin/env bash
+python3 "$(dirname "$0")/main.py" "$@"

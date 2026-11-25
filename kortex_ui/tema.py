@@ -1,0 +1,85 @@
+"""Sistema de diseño cross-platform de Kortex Nexus."""
+
+import platform
+
+_SISTEMA = platform.system()
+
+# --- Paleta de colores ---
+
+COLOR_FONDO = "#0A0A0A"
+COLOR_SUPERFICIE = "#141414"
+COLOR_ELEVADO = "#1F1F1F"
+COLOR_ELEVADO_HOVER = "#252525"
+COLOR_BORDE = "#2A2A2A"
+COLOR_BORDE_FUERTE = "#3A3A3A"
+
+COLOR_PRIMARIO = "#FF6B00"
+COLOR_PRIMARIO_HOVER = "#FF8533"
+COLOR_PRIMARIO_ACTIVO = "#E55A00"
+
+COLOR_TEXTO = "#FFFFFF"
+COLOR_TEXTO_SECUNDARIO = "#B0B0B0"
+COLOR_TEXTO_TERCIARIO = "#707070"
+COLOR_TEXTO_DESHABILITADO = "#404040"
+
+COLOR_EXITO = "#10B981"
+COLOR_ADVERTENCIA = "#F59E0B"
+COLOR_ERROR = "#EF4444"
+COLOR_INFO = "#3B82F6"
+
+
+# --- Tipografía adaptativa por sistema operativo ---
+
+if _SISTEMA == "Windows":
+    FUENTE_TITULO = "Segoe UI Semibold"
+    FUENTE_CUERPO = "Segoe UI"
+    FUENTE_MONO = "Consolas"
+else:
+    FUENTE_TITULO = "DejaVu Sans"
+    FUENTE_CUERPO = "DejaVu Sans"
+    FUENTE_MONO = "DejaVu Sans Mono"
+
+TAMANO_LOGO = 32
+TAMANO_H1 = 30
+TAMANO_H2 = 22
+TAMANO_H3 = 16
+TAMANO_CUERPO = 14
+TAMANO_NAV = 15
+TAMANO_PEQUENO = 12
+TAMANO_MICRO = 11
+
+
+# --- Espaciado ---
+
+ESP_XS = 4
+ESP_SM = 8
+ESP_MD = 12
+ESP_LG = 16
+ESP_XL = 24
+ESP_XXL = 28
+ESP_XXXL = 40
+
+
+# --- Radios de borde ---
+
+RADIO_SM = 6
+RADIO_MD = 10
+RADIO_LG = 14
+RADIO_XL = 20
+
+
+# --- Dimensiones de ventana seguras para pantallas pequeñas (1024x600+) ---
+
+VENTANA_ANCHO = 1120
+VENTANA_ALTO = 720
+VENTANA_MIN_ANCHO = 860
+VENTANA_MIN_ALTO = 560
+
+SIDEBAR_ANCHO = 240
+SIDEBAR_ANCHO_COLAPSADO = 70
+SIDEBAR_PADDING = 16
+SIDEBAR_ITEM_ALTO = 42
+SIDEBAR_ITEM_RADIO = 8
+
+STATUS_BAR_ALTO = 36
+HEADER_ALTO = 72

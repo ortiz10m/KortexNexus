@@ -1,45 +1,63 @@
-# 🚀 Kortex Nexus v1.0
-**La Suite de Productividad de Alto Rendimiento impulsada por IA, diseñada para hardware de bajos recursos.**
+# Kortex Nexus v2.0
 
-![Python](https://img.shields.io/badge/Python-3.x-blue?style=for-the-badge&logo=python)
-![Linux](https://img.shields.io/badge/Linux-Optimized-FCC624?style=for-the-badge&logo=linux)
-![License](https://img.shields.io/badge/License-Copyright_2026-red?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Active_Development-success?style=for-the-badge)
+Optimizador y suite de mantenimiento de escritorio para equipos con recursos limitados (desde **1 GB – 2 GB de RAM**), compatible con **Windows (7/8/10/11)** y **todas las distribuciones de Linux** (Debian/Ubuntu, Loc-OS, Arch, Fedora, openSUSE, Alpine y Void — X11 y Wayland).
 
-Kortex Nexus es una plataforma de ingeniería de software diseñada específicamente para revivir y potenciar equipos antiguos o con recursos limitados (menos de 2GB de RAM). A diferencia del software tradicional que asfixia la memoria, Kortex utiliza una **arquitectura modular multiplataforma** que delega el trabajo pesado al sistema operativo.
+100% offline. Sin cuentas, sin telemetría y sin conexiones externas.
 
 ---
 
-## 🔥 Características Principales
+## Instalación rápida
 
-* **🧠 Cerebro Nexus (IA Autónoma):** Asistente integrado que responde, resume y corrige textos usando enrutamiento dinámico sin necesidad de API Keys de pago.
-* **🗣️ Modo Jarvis (Voz y Oído):** Interacción por voz con el PC y respuestas en tiempo real con integración nativa de STT y TTS.
-* **🌐 Kortex Web Engine:** Puente de navegación inteligente. En Linux utiliza motores ultraligeros en "Modo App" garantizando cero consumo extra de RAM en la suite.
-* **🚀 Launcher Dinámico:** Panel de accesos directos personalizable y protección anti-captchas.
-* **🎵 Radio Nexus:** Reproductor de música en segundo plano basado en terminal. Escucha YouTube ahorrando hasta un 80% de CPU.
-* **📊 Monitor & Cleaner:** Visualización de recursos en tiempo real y purga automática de caché del SO.
-
----
-
-## 🛠️ Stack Tecnológico
-
-* **Core:** `Python 3.x`
-* **UI/UX:** `CustomTkinter` (Modern Dark GUI)
-* **Motor de IA:** Red Neuronal Libre Autónoma
-* **Audio & Voz:** `gTTS`, `SpeechRecognition`, `mpv`
-* **Arquitectura:** Delegación de procesos al OS API
-
----
-
-## 📦 Instalación Rápida (Entornos Linux)
-
-### 1. Dependencias del Sistema
-Abre tu terminal y asegúrate de tener los motores ligeros instalados:
+### Linux (todas las distros — Debian, Ubuntu, Loc-OS, Arch, Fedora, openSUSE, Alpine, Void)
 ```bash
-sudo apt update
-sudo apt install epiphany-browser mpv python3-venv -y
+wget https://github.com/ortiz10m/KortexNexus/releases/download/v2.0.0/KortexNexus-v2.0.0-Linux.tar.gz
+tar -xzf KortexNexus-v2.0.0-Linux.tar.gz
+cd KortexNexus-v2.0.0-Linux
+sudo ./install_linux.sh
+```
+*Instalación solo para tu usuario (sin `sudo`): ejecuta `./install_linux.sh`.*
 
-## 📄 Licencia y Copyright
-**© 2026 David Santiago Ortiz Rincon (Founder). Todos los derechos reservados.**
+Comandos disponibles tras instalar:
+- `kortex-nexus` — abre la interfaz gráfica.
+- `kortex-daemon` — ejecuta solo el servicio ligero en segundo plano (<20 MB RAM).
 
-Este proyecto es de código cerrado y propiedad intelectual exclusiva de su autor. El código fuente publicado en este repositorio tiene fines puramente demostrativos (Portafolio). Queda estrictamente prohibida la copia, modificación, distribución o uso comercial de este software sin autorización expresa, previa y por escrito del autor.
+### Windows (7 / 8 / 10 / 11)
+1. Descarga `KortexNexus-v2.0.0-Windows.zip` desde la sección [Releases](https://github.com/ortiz10m/KortexNexus/releases/tag/v2.0.0).
+2. Descomprime la carpeta completa.
+3. Ejecuta `install_windows.bat` para abrir el asistente gráfico de instalación (o abre directo `KortexNexus\KortexNexus.exe`).
+
+---
+
+## Características principales
+
+- **Monitor real de memoria y presión:** mide RAM disponible real (`available`, no `free`), Swap/ZRAM y presión del kernel (`/proc/pressure/memory` PSI en Linux).
+- **Suspensión inteligente por foco (Auto-Cryo):** detecta procesos pesados inactivos en segundo plano bajo presión de memoria, los suspende temporalmente y los reanuda al instante al volver a su ventana o al cerrar Kortex.
+- **ZRAM y red real sin placebo:** configura ZRAM (`zstd`/`lz4`) + `vm.page-cluster=0` en Linux, evita `drop_caches=3` en discos HDD lentos, y optimiza congestión TCP (`BBR` en Linux / `Set-NetTCPSetting` en Windows).
+- **Modos reversibles:** `Supervivencia (1-2 GB)`, `Gaming`, `Streaming` y `Trabajo`. Todas las prioridades y procesos se restauran al desactivar el modo o cerrar la aplicación.
+- **Predicción en vivo sin dependencias pesadas:** proyección a 5, 15 y 30 minutos + tiempo estimado a saturación (TTC) usando EWMA y regresión temporal en Python puro (sin `pandas` ni `scikit-learn`).
+- **Archivos y papelera recuperable:** escaneo de carpetas, limpieza de temporales multi-distro, duplicados por MD5, listado de apps (`HKLM`/`HKCU` en Windows; `dpkg`, `pacman`, `rpm`, `apk` y `flatpak` en Linux) y papelera interna con `manifest.json` y restauración exacta.
+- **Modo servicio (`--daemon`):** corre en segundo plano sin importar la interfaz gráfica.
+
+---
+
+## Desarrollo y pruebas
+
+```bash
+python -m venv venv
+# Windows: .\venv\Scripts\pip install -r requirements.txt
+# Linux:   ./venv/bin/pip install -r requirements.txt
+
+# Ejecutar pruebas funcionales y de seguridad (cero fugas de datos)
+python -m unittest discover -s tests -v
+
+# Generar paquetes de distribución (release/)
+python packaging/build_releases.py
+```
+
+---
+
+## Licencia y derechos de autor
+
+**Copyright (c) 2026 David Santiago Ortiz Rincón. Todos los derechos reservados.**
+
+Este software y su código fuente son propiedad intelectual exclusiva de su autor. El repositorio se publica con fines de auditoría de seguridad, transparencia y portafolio. Queda prohibida la copia, modificación, redistribución comercial o venta sin autorización previa y por escrito del autor.
